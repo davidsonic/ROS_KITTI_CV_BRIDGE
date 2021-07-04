@@ -137,7 +137,7 @@ def publish_gps_data(gps_pub, imu_data):
 
 
 
-def publish_3dbox(box3d_pub, corners_3d_velos, types, track_ids):
+def publish_3dbox(box3d_pub, corners_3d_velos, types, track_ids=None):
     marker_array = MarkerArray()
     for i, corners_3d_velo in enumerate(corners_3d_velos): # 1 (8x3) out of n (8x3)
         marker = Marker()
@@ -165,42 +165,43 @@ def publish_3dbox(box3d_pub, corners_3d_velos, types, track_ids):
         marker_array.markers.append(marker)
 
         # track id
-        text_marker = Marker()
-        text_marker.header.frame_id = FRAME_ID
-        text_marker.header.stamp = rospy.Time.now()
+        if track_ids is not None:
+            text_marker = Marker()
+            text_marker.header.frame_id = FRAME_ID
+            text_marker.header.stamp = rospy.Time.now()
 
-        text_marker.id = i + 1000
-        text_marker.action = Marker.ADD
-        text_marker.lifetime = rospy.Duration(LIFETIME)
-        text_marker.type = Marker.TEXT_VIEW_FACING
+            text_marker.id = i + 1000
+            text_marker.action = Marker.ADD
+            text_marker.lifetime = rospy.Duration(LIFETIME)
+            text_marker.type = Marker.TEXT_VIEW_FACING
 
-        # p4 = corners_3d_velo[4] # upper front left corner
-        p4 = np.mean(corners_3d_velo, axis=0) # plot in the center mass
+            # p4 = corners_3d_velo[4] # upper front left corner
+            p4 = np.mean(corners_3d_velo, axis=0) # plot in the center mass
 
-        text_marker.pose.position.x = p4[0]
-        text_marker.pose.position.y = p4[1]
-        text_marker.pose.position.z = p4[2] + 1
+            text_marker.pose.position.x = p4[0]
+            text_marker.pose.position.y = p4[1]
+            text_marker.pose.position.z = p4[2] + 1
 
-        text_marker.text = str(track_ids[i])
+            text_marker.text = str(track_ids[i])
 
-        text_marker.scale.x = 1
-        text_marker.scale.y = 1
-        text_marker.scale.z = 1
+            text_marker.scale.x = 1
+            text_marker.scale.y = 1
+            text_marker.scale.z = 1
 
-        if types[i] is None:
-            text_marker.color.r = 0
-            text_marker.color.g = 1.0
-            text_marker.color.b = 1.0
-        else:
-            b, g, r = DETECTION_COLOR_MAP[types[i]]
-            text_marker.color.r = r/255.0
-            text_marker.color.g = g/255.0
-            text_marker.color.b = b/255.0
-            text_marker.color.a = 1.0
-            text_marker.scale.x = 0.1
+            if types[i] is None:
+                text_marker.color.r = 0
+                text_marker.color.g = 1.0
+                text_marker.color.b = 1.0
+            else:
+                b, g, r = DETECTION_COLOR_MAP[types[i]]
+                text_marker.color.r = r/255.0
+                text_marker.color.g = g/255.0
+                text_marker.color.b = b/255.0
+                text_marker.color.a = 1.0
+                text_marker.scale.x = 0.1
 
-        marker_array.markers.append(text_marker)
-    box3d_pub.publish(marker_array)
+            marker_array.markers.append(text_marker)
+        box3d_pub.publish(marker_array)
 
 
 

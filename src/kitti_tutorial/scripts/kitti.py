@@ -52,7 +52,7 @@ if __name__=='__main__':
             corners_3d_velo = calib.project_rect_to_velo(corners_3d_cam2.T)
             corners_3d_velos += [corners_3d_velo]  # nx(8x3)
             centers[track_id] = np.mean(corners_3d_velo, axis=0)[:2]
-        centers[-1] = np.array([0,0]) # ego car
+        centers[-1] = np.array([0,0]) # ego carw
 
         # sensor info
         image = read_camera(os.path.join(DATA_PATH, 'image_02/data/%010d.png' % frame))

@@ -73,11 +73,15 @@ class Calibration(object):
         TODO(rqi): do matrix multiplication only once for each projection.
     '''
 
-    def __init__(self, calib_filepath, from_video=False):
-        if from_video:
-            calibs = self.read_calib_from_video(calib_filepath)
+    def __init__(self, calib_filepath, from_video=False, rcnn=False):
+        if not rcnn:
+            if from_video:
+                calibs = self.read_calib_from_video(calib_filepath)
+            else:
+                calibs = self.read_calib_file(calib_filepath)
         else:
-            calibs = self.read_calib_file(calib_filepath)
+            calibs = self.read_calib_rcnn(calib_filepath)
+
         # Projection matrix from rect camera coord to image2 coord
         self.P = calibs['P2']
         self.P = np.reshape(self.P, [3, 4])
@@ -115,6 +119,18 @@ class Calibration(object):
                     pass
 
         return data
+
+    def read_calib_rcnn(self, filepath):
+        data = {}
+        file_data = self.read_calib_file(filepath)
+        Tr_velo_to_cam = np.zeros((3, 4))
+        Tr_velo_to_cam[0:3, 0:3] = np.reshape(file_data['R'], [3, 3])
+        Tr_velo_to_cam[:, 3] = file_data['T']
+        data['Tr_velo_to_cam'] = np.reshape(Tr_velo_to_cam, [12])
+        data['R0_rect'] = file_data['R_rect']
+        data['P2'] = file_data['P_rect_02']
+        return data
+
 
     def read_calib_from_video(self, calib_root_dir):
         ''' Read calibration for camera 2 from video calib files.
